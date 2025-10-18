@@ -1,4 +1,4 @@
-# Language Data Rights Framework — #993
+# Language Data Rights Framework — #941
 
 **Author:** Henrik Andersen
 **Date:** 2025-10-19
