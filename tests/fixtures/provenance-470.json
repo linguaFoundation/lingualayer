@@ -1,7 +1,7 @@
 {
-  "_fixture_id": "462",
+  "_fixture_id": "470",
   "_description": "Test fixture for dataset provenance verification — simulates a complete dataset registration and verification flow on Soroban testnet",
-  "_author": "Adebayo Olawale",
+  "_author": "Henrik Andersen",
   "_date": "2025-11-13",
   "scenario": "full_provenance_chain",
   "network": "testnet",
@@ -15,12 +15,12 @@
     "language_expertise": ["EN", "SW", "FR"]
   },
   "dataset": {
-    "name": "Blockchain Terminology EN-SW v2.462",
+    "name": "Blockchain Terminology EN-SW v2.470",
     "language_pair": "EN->SW",
     "domain": "technical",
-    "ipfs_cid": "QmXzY7bN9wKpL3mR8vT2sD6fG4hJ5kM1nP0q462",
-    "string_count": 562,
-    "license_price_xlm": 562,
+    "ipfs_cid": "QmXzY7bN9wKpL3mR8vT2sD6fG4hJ5kM1nP0q470",
+    "string_count": 570,
+    "license_price_xlm": 570,
     "sample_strings": [
       {
         "source": "The smart contract executes automatically when conditions are met.",
