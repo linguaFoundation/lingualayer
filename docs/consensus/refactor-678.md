@@ -1,6 +1,6 @@
-# Proof-of-Translation Consensus — Refactor #185
+# Proof-of-Translation Consensus — Refactor #678
 
-**Author:** Ngozi Obiora
+**Author:** Adebayo Olawale
 **Date:** 2025-11-22
 **Type:** Refactor
 
