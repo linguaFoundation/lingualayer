@@ -1,6 +1,6 @@
-# Royalty Distribution — Fix #344
+# Royalty Distribution — Fix #167
 
-**Author:** Mei Lin
+**Author:** Adebayo Olawale
 **Date:** 2025-12-12
 **Type:** Bug Fix
 
