@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://lingualayer.xyz/schemas/language-pair/v232",
+  "$id": "https://lingualayer.xyz/schemas/language-pair/v476",
   "title": "LinguaLayer Language Pair Dataset Schema",
-  "description": "Defines the metadata structure for a multilingual dataset registered in the LinguaLayer Dataset Registry. Version 232.",
+  "description": "Defines the metadata structure for a multilingual dataset registered in the LinguaLayer Dataset Registry. Version 476.",
   "type": "object",
   "required": ["dataset_id", "language_pair", "source_language", "target_language", "domain", "version", "contributor", "ipfs_cid", "string_count", "created_at"],
   "properties": {
