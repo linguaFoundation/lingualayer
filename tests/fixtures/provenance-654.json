@@ -1,5 +1,5 @@
 {
-  "_fixture_id": "379",
+  "_fixture_id": "654",
   "_description": "Test fixture for dataset provenance verification — simulates a complete dataset registration and verification flow on Soroban testnet",
   "_author": "Ngozi Obiora",
   "_date": "2026-01-02",
@@ -15,12 +15,12 @@
     "language_expertise": ["EN", "SW", "FR"]
   },
   "dataset": {
-    "name": "Blockchain Terminology EN-SW v2.379",
+    "name": "Blockchain Terminology EN-SW v2.654",
     "language_pair": "EN->SW",
     "domain": "technical",
-    "ipfs_cid": "QmXzY7bN9wKpL3mR8vT2sD6fG4hJ5kM1nP0q379",
-    "string_count": 479,
-    "license_price_xlm": 479,
+    "ipfs_cid": "QmXzY7bN9wKpL3mR8vT2sD6fG4hJ5kM1nP0q654",
+    "string_count": 754,
+    "license_price_xlm": 254,
     "sample_strings": [
       {
         "source": "The smart contract executes automatically when conditions are met.",
