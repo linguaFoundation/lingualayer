@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = [
+    "contracts/dataset-registry",
+    "contracts/license-router",
+    "contracts/royalty-splitter",
+]
+
+[workspace.dependencies]
+soroban-sdk = { version = "21.0.1" }
+
+[workspace.package]
+rust-version = "1.78"
