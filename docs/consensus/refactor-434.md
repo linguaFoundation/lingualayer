@@ -1,6 +1,6 @@
-# Proof-of-Translation Consensus — Refactor #565
+# Proof-of-Translation Consensus — Refactor #434
 
-**Author:** Henrik Andersen
+**Author:** Mei Lin
 **Date:** 2026-02-18
 **Type:** Refactor
 
