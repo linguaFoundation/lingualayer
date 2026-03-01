@@ -1,7 +1,7 @@
-# Proof-of-Translation Consensus — Refactor #434
+# Proof-of-Translation Consensus — Refactor #680
 
-**Author:** Mei Lin
-**Date:** 2026-02-18
+**Author:** Adebayo Olawale
+**Date:** 2026-03-01
 **Type:** Refactor
 
 ## Overview
