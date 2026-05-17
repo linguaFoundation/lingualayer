@@ -2,6 +2,42 @@
 
 > Every translation is an asset. Every contributor earns automatically.
 
+[![Testnet](https://img.shields.io/badge/Soroban-Testnet%20Live-8b5cf6?style=flat-square&logo=stellar)](https://stellar.expert/explorer/testnet/contract/CABO2HQDY4DF6XA2R3O75CZ6XQTZ5D4Y2D5NYV7KOIC2BCZNV7OKZXK5)
+[![Contract](https://img.shields.io/badge/Dataset%20Registry-Deployed-10b981?style=flat-square)](https://stellar.expert/explorer/testnet/contract/CABO2HQDY4DF6XA2R3O75CZ6XQTZ5D4Y2D5NYV7KOIC2BCZNV7OKZXK5)
+[![Live App](https://img.shields.io/badge/App-lingualayer.vercel.app-a855f7?style=flat-square)](https://lingualayer.vercel.app)
+
+---
+
+## Testnet Deployment
+
+The LinguaLayer Dataset Registry contract is **live on Stellar Soroban testnet** with real on-chain interactions.
+
+| | |
+|---|---|
+| **Contract ID** | `CABO2HQDY4DF6XA2R3O75CZ6XQTZ5D4Y2D5NYV7KOIC2BCZNV7OKZXK5` |
+| **Network** | Stellar Testnet (Soroban) |
+| **Explorer** | [View on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CABO2HQDY4DF6XA2R3O75CZ6XQTZ5D4Y2D5NYV7KOIC2BCZNV7OKZXK5) |
+| **Deployed** | May 2026 |
+| **Deployer** | `GC3JR6LHS53D5B4EKUZJUXY74FWRL6ZOR5YV6J3XOZYH3UR6IDSUWDQG` |
+
+### Live On-Chain Activity
+
+The contract has been initialized and populated with real dataset registrations and verifications:
+
+| Tx | Action | Dataset | Language Pair |
+|---|---|---|---|
+| [203811f9...](https://stellar.expert/explorer/testnet/tx/203811f91f6ae8f1618fca6654768c485f9ac481636402ad37f23d5ccf13f5fd) | `initialize` | — | Admin set |
+| [4eda8507...](https://stellar.expert/explorer/testnet/tx/4eda85077849658f31e3aa125e383f391167baf53311d6e3b3e2c87961447ea6) | `register_dataset` | React Documentation | EN → SW |
+| On-chain | `register_dataset` | UN SDG Reports | EN → AR |
+| On-chain | `register_dataset` | Medical Protocols | EN → HI ✓ Verified |
+| On-chain | `register_dataset` | DeFi Glossary | EN → ZH |
+
+### Roadmap: Testnet → Mainnet
+
+Active development continues through the Drips Wave Program. After full feature completion and security review on testnet, the protocol will migrate to **Stellar Mainnet**. The License Router and Royalty Splitter contracts are next in the deployment queue.
+
+---
+
 LinguaLayer is a decentralized protocol for the management, licensing, and monetization of multilingual datasets. Built on Stellar Soroban, it provides a transparent, auditable framework where crowdsourced localization contributors own their work, license it to enterprises, and earn proportional royalties—automatically, in real time, without a platform intermediary.
 
 **Language data is the world's most undervalued digital asset. LinguaLayer makes it ownable, tradeable, and permanently rewarding for those who create it.**
