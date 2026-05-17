@@ -149,7 +149,7 @@ mod test {
     fn test_full_lifecycle() {
         let env = Env::default();
         env.mock_all_auths();
-        let contract_id = env.register(DatasetRegistryContract, None);
+        let contract_id = env.register(DatasetRegistryContract, ());
         let client = DatasetRegistryContractClient::new(&env, &contract_id);
 
         let admin = Address::generate(&env);
