@@ -231,49 +231,72 @@ export default function LinguaLayerPage() {
 
       <WalletModal isOpen={walletOpen} onClose={() => setWalletOpen(false)} wallet={wallet} />
 
-      {/* HEADER */}
+      {/* HEADER — center-split editorial: nav items flank a centered logo */}
       <header className="fixed top-0 inset-x-0 z-50">
         <div className={cn(
-          "mx-4 mt-4 flex items-center justify-between px-5 py-3 rounded-2xl border backdrop-blur-xl",
-          isDark ? "bg-purple-950/60 border-purple-900/50" : "bg-white/80 border-violet-200"
+          "relative grid grid-cols-[1fr_auto_1fr] items-center h-16 border-b backdrop-blur-xl px-6",
+          isDark ? "bg-purple-950/70 border-purple-900/40" : "bg-white/92 border-violet-200"
         )}>
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/30">
-              <Languages className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <span className={cn("font-black text-lg uppercase tracking-tight leading-none block", isDark ? "text-white" : "text-purple-950")}>LinguaLayer</span>
-              <span className="text-[9px] font-bold text-violet-400 uppercase tracking-[0.4em]">Soroban · Mainnet</span>
-            </div>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-6">
+          {/* Left nav items */}
+          <nav className="hidden md:flex items-center gap-1 justify-start">
             {[
               { label: "Datasets", href: "/datasets" },
               { label: "Royalties", href: "/royalties" },
               { label: "Licensing", href: "/licensing" },
-              { label: "Governance", href: "/governance" },
-              { label: "Community", href: "/communities" },
-              { label: "Roadmap", href: "/roadmap" },
             ].map(n => (
               <a key={n.href} href={n.href}
-                className={cn("text-[11px] font-bold uppercase tracking-widest transition-colors hover:text-violet-400",
-                  isDark ? "text-purple-500" : "text-purple-600")}
+                className={cn(
+                  "px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all hover:text-violet-400 hover:bg-violet-500/10",
+                  isDark ? "text-purple-400/60" : "text-purple-700/60"
+                )}
               >{n.label}</a>
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
+          {/* Center logo */}
+          <div className="flex flex-col items-center gap-1 px-8">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
+                <Languages className="w-4 h-4 text-white" />
+              </div>
+              <span className={cn("font-black text-base uppercase tracking-[0.12em]", isDark ? "text-white" : "text-purple-950")}>
+                LinguaLayer
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="h-px w-8 bg-gradient-to-r from-transparent to-violet-500/40" />
+              <span className="text-[7px] font-mono text-violet-500/60 uppercase tracking-[0.5em]">Soroban · Mainnet</span>
+              <div className="h-px w-8 bg-gradient-to-l from-transparent to-violet-500/40" />
+            </div>
+          </div>
+
+          {/* Right nav items + controls */}
+          <div className="flex items-center justify-end gap-1">
+            <nav className="hidden md:flex items-center gap-1 mr-3">
+              {[
+                { label: "Governance", href: "/governance" },
+                { label: "Community", href: "/communities" },
+                { label: "Roadmap", href: "/roadmap" },
+              ].map(n => (
+                <a key={n.href} href={n.href}
+                  className={cn(
+                    "px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all hover:text-violet-400 hover:bg-violet-500/10",
+                    isDark ? "text-purple-400/60" : "text-purple-700/60"
+                  )}
+                >{n.label}</a>
+              ))}
+            </nav>
+            <div className={cn("w-px h-5 mx-1", isDark ? "bg-purple-800" : "bg-violet-200")} />
             <ThemeToggle isDark={isDark} />
             {wallet.address ? (
               <button onClick={() => setWalletOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest bg-violet-500/10 border border-violet-500/20 text-violet-400 hover:bg-violet-500/20 transition-all">
-                <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
-                <span className="font-mono">{wallet.address.slice(0, 4)}…{wallet.address.slice(-4)}</span>
+                className="ml-1 flex items-center gap-2 px-3 py-1.5 text-[10px] font-mono font-bold bg-violet-500/10 border border-violet-500/20 text-violet-400 rounded-lg hover:bg-violet-500/15 transition-all">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+                {wallet.address.slice(0, 4)}…{wallet.address.slice(-4)}
               </button>
             ) : (
               <button onClick={() => setWalletOpen(true)}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/20 hover:opacity-90 transition-all">
+                className="ml-1 flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white hover:opacity-90 transition-all">
                 <Wallet className="w-3.5 h-3.5" /> Connect
               </button>
             )}
