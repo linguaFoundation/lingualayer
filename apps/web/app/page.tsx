@@ -314,7 +314,7 @@ function TranslationCard({ isDark }: { isDark: boolean }) {
         <div className="space-y-3 mb-4">
           <div className={cn("p-3 rounded-lg border", isDark ? "bg-purple-900/30 border-purple-800/40" : "bg-violet-50 border-violet-200")}>
             <div className="text-[7px] font-mono text-purple-600 uppercase tracking-widest mb-1">Source</div>
-            <p className={cn("text-xs leading-relaxed", isDark ? "text-purple-200" : "text-purple-900")}>"{s.source}"</p>
+            <p className={cn("text-xs leading-relaxed", isDark ? "text-purple-200" : "text-purple-900")}>&ldquo;{s.source}&rdquo;</p>
           </div>
           <div className={cn("p-3 rounded-lg border", isDark ? "bg-violet-900/20 border-violet-800/30" : "bg-violet-100 border-violet-300")}>
             <div className="text-[7px] font-mono text-violet-500 uppercase tracking-widest mb-1">Translation</div>
