@@ -1,13 +1,8 @@
 [workspace]
-resolver = "2"
 members = [
     "contracts/dataset-registry",
     "contracts/license-router",
     "contracts/royalty-splitter",
+    "contracts/quality-oracle",
+    "contracts/data-commission",
 ]
-
-[workspace.dependencies]
-soroban-sdk = { version = "20.5.0" }
-
-[workspace.package]
-rust-version = "1.78"
