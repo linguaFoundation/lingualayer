@@ -1,14 +1,14 @@
 import {
   StellarWalletsKit,
-  WalletNetwork,
+  Networks,
   allowAllModules,
   FREIGHTER_ID,
 } from "@creit.tech/stellar-wallets-kit";
 
 const NETWORK =
   process.env.NEXT_PUBLIC_STELLAR_NETWORK === "mainnet"
-    ? WalletNetwork.PUBLIC
-    : WalletNetwork.TESTNET;
+    ? Networks.PUBLIC
+    : Networks.TESTNET;
 
 let _kit: StellarWalletsKit | null = null;
 
