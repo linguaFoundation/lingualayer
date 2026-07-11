@@ -1,8 +1,5 @@
-import {
-  StellarWalletsKit,
-  Networks,
-  FREIGHTER_ID,
-} from "@creit.tech/stellar-wallets-kit";
+import { StellarWalletsKit, Networks } from "@creit.tech/stellar-wallets-kit";
+import { FREIGHTER_ID } from "@creit.tech/stellar-wallets-kit/modules/freighter";
 import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
 
 const NETWORK =
@@ -10,34 +7,43 @@ const NETWORK =
     ? Networks.PUBLIC
     : Networks.TESTNET;
 
-let _kit: StellarWalletsKit | null = null;
+let _initialized = false;
 
-export function getWalletsKit(): StellarWalletsKit {
-  if (_kit) return _kit;
-  _kit = new StellarWalletsKit({
+export function initWalletsKit(): void {
+  if (_initialized) return;
+  StellarWalletsKit.init({
     network: NETWORK,
     selectedWalletId: FREIGHTER_ID,
     modules: defaultModules(),
   });
-  return _kit;
+  _initialized = true;
 }
 
 export async function openWalletModal(): Promise<{ address: string; walletId: string }> {
-  const kit = getWalletsKit();
-  return new Promise((resolve, reject) => {
-    kit.openModal({
-      onWalletSelected: async (option) => {
-        try {
-          await kit.setWallet(option.id);
-          const { address } = await kit.getAddress();
-          resolve({ address, walletId: option.id });
-        } catch (e) {
-          reject(e);
-        }
-      },
-      onClosed: () => reject(new Error("wallet modal closed")),
-      modalTitle: "Connect your Stellar Wallet",
-      notAvailableText: "Not installed — click to get it",
-    });
+  initWalletsKit();
+  const { address } = await StellarWalletsKit.authModal();
+  const walletId = FREIGHTER_ID; // authModal sets the active wallet internally
+  return { address, walletId };
+}
+
+export async function getConnectedAddress(): Promise<string> {
+  initWalletsKit();
+  const { address } = await StellarWalletsKit.getAddress();
+  return address;
+}
+
+export async function signTransaction(
+  xdr: string,
+  networkPassphrase?: string
+): Promise<string> {
+  initWalletsKit();
+  const { signedTxXdr } = await StellarWalletsKit.signTransaction(xdr, {
+    networkPassphrase: networkPassphrase ?? NETWORK,
   });
+  return signedTxXdr;
+}
+
+export async function disconnectWallet(): Promise<void> {
+  initWalletsKit();
+  await StellarWalletsKit.disconnect();
 }
