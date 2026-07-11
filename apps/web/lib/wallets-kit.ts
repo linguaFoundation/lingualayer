@@ -3,7 +3,7 @@ import {
   WalletNetwork,
   allowAllModules,
   FREIGHTER_ID,
-} from "@creit-tech/stellar-wallets-kit";
+} from "@creit.tech/stellar-wallets-kit";
 
 const NETWORK =
   process.env.NEXT_PUBLIC_STELLAR_NETWORK === "mainnet"
