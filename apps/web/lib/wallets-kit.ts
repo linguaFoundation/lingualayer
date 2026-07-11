@@ -1,9 +1,9 @@
 import {
   StellarWalletsKit,
   Networks,
-  allowAllModules,
   FREIGHTER_ID,
 } from "@creit.tech/stellar-wallets-kit";
+import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
 
 const NETWORK =
   process.env.NEXT_PUBLIC_STELLAR_NETWORK === "mainnet"
@@ -17,7 +17,7 @@ export function getWalletsKit(): StellarWalletsKit {
   _kit = new StellarWalletsKit({
     network: NETWORK,
     selectedWalletId: FREIGHTER_ID,
-    modules: allowAllModules(),
+    modules: defaultModules(),
   });
   return _kit;
 }
