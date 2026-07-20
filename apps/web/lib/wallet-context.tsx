@@ -3,6 +3,10 @@
 /**
  * WalletContext: React context wrapping Stellar Wallets Kit unified modal (Issue #140).
  *
+ * wallets-kit is imported dynamically inside callbacks so the stellar-wallets-kit
+ * package (which accesses localStorage at module scope) is never pulled into the
+ * server render and does not crash during Next.js static prerendering.
+ *
  * Usage:
  *   // Wrap your app (in layout.tsx or a root client boundary):
  *   <WalletProvider>…</WalletProvider>
@@ -18,12 +22,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import {
-  initWalletsKit,
-  openWalletModal,
-  disconnectWallet,
-  signTransaction,
-} from "./wallets-kit";
 
 interface WalletState {
   address: string | null;
@@ -53,6 +51,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const connect = useCallback(async () => {
     setState((s) => ({ ...s, connecting: true, error: null }));
     try {
+      const { initWalletsKit, openWalletModal } = await import("./wallets-kit");
       initWalletsKit();
       const { address, walletId } = await openWalletModal();
       setState({
@@ -71,6 +70,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const disconnect = useCallback(async () => {
     try {
+      const { disconnectWallet } = await import("./wallets-kit");
       await disconnectWallet();
     } catch {
       // Ignore disconnect errors — clear local state regardless.
@@ -88,6 +88,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const sign = useCallback(
     async (xdr: string, networkPassphrase?: string): Promise<string> => {
       if (!state.connected) throw new Error("No wallet connected.");
+      const { signTransaction } = await import("./wallets-kit");
       return signTransaction(xdr, networkPassphrase);
     },
     [state.connected]
