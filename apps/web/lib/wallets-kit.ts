@@ -1,5 +1,6 @@
 import { StellarWalletsKit, Networks } from "@creit.tech/stellar-wallets-kit";
 import { FREIGHTER_ID } from "@creit.tech/stellar-wallets-kit/modules/freighter";
+import { LEDGER_ID, LedgerModule } from "@creit.tech/stellar-wallets-kit/modules/ledger";
 import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
 
 const NETWORK =
@@ -14,7 +15,7 @@ export function initWalletsKit(): void {
   StellarWalletsKit.init({
     network: NETWORK,
     selectedWalletId: FREIGHTER_ID,
-    modules: defaultModules(),
+    modules: [...defaultModules(), new LedgerModule()],
   });
   _initialized = true;
 }
@@ -22,7 +23,7 @@ export function initWalletsKit(): void {
 export async function openWalletModal(): Promise<{ address: string; walletId: string }> {
   initWalletsKit();
   const { address } = await StellarWalletsKit.authModal();
-  const walletId = FREIGHTER_ID; // authModal sets the active wallet internally
+  const walletId = FREIGHTER_ID;
   return { address, walletId };
 }
 
@@ -46,4 +47,20 @@ export async function signTransaction(
 export async function disconnectWallet(): Promise<void> {
   initWalletsKit();
   await StellarWalletsKit.disconnect();
+}
+
+export { LEDGER_ID };
+
+export async function connectLedger(): Promise<{ address: string; walletId: string }> {
+  if (typeof window === "undefined") throw new Error("Must be called in the browser");
+  const nav = navigator as Navigator & { usb?: unknown; hid?: unknown };
+  if (!nav.usb && !nav.hid) {
+    throw new Error(
+      "WebUSB/WebHID is not supported in this browser. Please use Chrome or Edge."
+    );
+  }
+  initWalletsKit();
+  StellarWalletsKit.setWallet(LEDGER_ID);
+  const { address } = await StellarWalletsKit.getAddress();
+  return { address, walletId: LEDGER_ID };
 }
