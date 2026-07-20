@@ -24,6 +24,7 @@ export function ExpectedPages() {
             <tr key="/governance"><td><code>/governance</code></td><td>Council and moderation policy</td><td>Planned</td></tr>
             <tr key="/roadmap"><td><code>/roadmap</code></td><td>Delivery milestones</td><td>Scaffold</td></tr>
             <tr key="/docs"><td><code>/docs</code></td><td>Contributor and curator handbook</td><td>Scaffold</td></tr>
+            <tr key="/contributors/:address"><td><code>/contributors/:address</code></td><td>Contributor reputation profile (on-chain)</td><td>Live</td></tr>
           </tbody>
         </table>
       </div>
