@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { NetworkBanner } from "@/components/network-banner";
+import { WalletProvider } from "@/lib/wallet-context";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -42,28 +43,30 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <NetworkBanner />
-        <header className="nav">
-          <div className="container nav-inner">
-            <Link href="/" className="brand brand-with-logo">
-              <Image
-                src="/icon.svg"
-                alt=""
-                width={38}
-                height={38}
-                className="nav-logo"
-                unoptimized
-              />
-              <span className="brand-text">LinguaLayer</span>
-            </Link>
-            <nav className="links">
-              {nav.map(([label, href]) => (
-                <Link key={href} href={href}>{label}</Link>
-              ))}
-            </nav>
-          </div>
-        </header>
-        <main className="container">{children}</main>
+        <WalletProvider>
+          <NetworkBanner />
+          <header className="nav">
+            <div className="container nav-inner">
+              <Link href="/" className="brand brand-with-logo">
+                <Image
+                  src="/icon.svg"
+                  alt=""
+                  width={38}
+                  height={38}
+                  className="nav-logo"
+                  unoptimized
+                />
+                <span className="brand-text">LinguaLayer</span>
+              </Link>
+              <nav className="links">
+                {nav.map(([label, href]) => (
+                  <Link key={href} href={href}>{label}</Link>
+                ))}
+              </nav>
+            </div>
+          </header>
+          <main className="container">{children}</main>
+        </WalletProvider>
       </body>
     </html>
   );
