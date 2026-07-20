@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { NetworkBanner } from "@/components/network-banner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
+        <NetworkBanner />
         <header className="nav">
           <div className="container nav-inner">
             <Link href="/" className="brand brand-with-logo">
