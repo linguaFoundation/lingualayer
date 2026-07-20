@@ -24,7 +24,16 @@ for (const [key, fallback] of Object.entries(TESTNET_CONTRACTS)) {
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  env,
+  webpack(config, { webpack }) {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      buffer: require.resolve("buffer/"),
+    };
+    config.plugins.push(
+      new webpack.ProvidePlugin({ Buffer: ["buffer", "Buffer"] })
+    );
+    return config;
+  },
 };
 
 export default nextConfig;
