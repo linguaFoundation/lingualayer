@@ -1,11 +1,11 @@
+import { EmptyState } from "@/components/empty-state";
+
 export default function Page() {
   return (
     <section className="section">
       <span className="tag">Documentation</span>
-      <h2>Technical specs, governance, and integration guides.</h2>
-      <p style={{ color: "var(--muted)" }}>
-        Scaffold page — replace with production content, data loaders, and analytics.
-      </p>
+      <h2>Contributor and curator handbook</h2>
+      <EmptyState variant="docs" />
     </section>
   );
 }

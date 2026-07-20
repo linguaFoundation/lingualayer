@@ -368,6 +368,34 @@ a { color: inherit; text-decoration: none; }
   font-size: 0.93rem;
   line-height: 1.55;
 }
+/* empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 56px 24px 48px;
+  gap: 0;
+}
+.empty-state-illustration {
+  margin-bottom: 24px;
+  opacity: 0.92;
+}
+.empty-state-heading {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  font-weight: 650;
+  color: var(--text);
+}
+.empty-state-body {
+  margin: 0;
+  font-size: 0.93rem;
+  color: var(--muted);
+  max-width: 380px;
+  line-height: 1.6;
+}
+
 .landing-trust {
   text-align: center;
   padding: 20px 22px;
