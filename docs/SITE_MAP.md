@@ -11,6 +11,7 @@ Routes planned for the Next.js application. Implement incrementally; links appea
 | `/governance` | Council and moderation policy | Planned |
 | `/roadmap` | Delivery milestones | Scaffold |
 | `/docs` | Contributor and curator handbook | Scaffold |
+| `/contributors/:address` | Contributor reputation profile (on-chain) | Live |
 
 ## Notes
 - `*` = scaffold present with placeholder content.
