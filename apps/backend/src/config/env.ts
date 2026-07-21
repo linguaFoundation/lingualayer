@@ -26,6 +26,14 @@ const schema = z.object({
   INDEXER_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(5_000),
   // Max events requested per poll.
   INDEXER_PAGE_SIZE: z.coerce.number().int().positive().max(10_000).default(100),
+  // SEP-0010 Web Authentication
+  STELLAR_NETWORK_PASSPHRASE: z
+    .string()
+    .default("Test SDF Network ; September 2015"),
+  SERVER_SIGNING_KEY: z.string().default(""),
+  SERVER_DOMAIN: z.string().max(59).default("lingualayer.io"),
+  WEB_AUTH_DOMAIN: z.string().default("lingualayer.io"),
+  CHALLENGE_TTL_SECONDS: z.coerce.number().default(900),
 });
 
 const raw = schema.parse(process.env);
@@ -43,4 +51,9 @@ export const config = {
     pollIntervalMs: raw.INDEXER_POLL_INTERVAL_MS,
     pageSize: raw.INDEXER_PAGE_SIZE,
   },
+  networkPassphrase: raw.STELLAR_NETWORK_PASSPHRASE,
+  serverSigningKey: raw.SERVER_SIGNING_KEY,
+  serverDomain: raw.SERVER_DOMAIN,
+  webAuthDomain: raw.WEB_AUTH_DOMAIN,
+  challengeTtlSeconds: raw.CHALLENGE_TTL_SECONDS,
 };
