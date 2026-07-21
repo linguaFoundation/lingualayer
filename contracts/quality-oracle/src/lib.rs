@@ -1,4 +1,5 @@
-#![no_std]
+#![cfg_attr(not(test), no_std)]
+
 use soroban_sdk::{
     contract, contractimpl, contracttype, symbol_short,
     Address, Env, String,
@@ -13,6 +14,14 @@ const MIN_STAKE_DEFAULT: u64 = 10_000_000;
 pub struct CuratorRecord {
     pub stake: u64,
     pub slashed: bool,
+}
+
+#[contracttype]
+#[derive(Clone)]
+enum StorageKey {
+    Curator(Address),
+    Attestation(String, Address),
+    Quality(String),
 }
 
 #[contracttype]
@@ -66,6 +75,7 @@ impl QualityOracle {
     /// `stake` must be >= the configured minimum stake.
     pub fn register_curator(env: Env, curator: Address, stake: u64) {
         curator.require_auth();
+        let key = StorageKey::Curator(curator.clone());
         let min: u64 = env
             .storage()
             .instance()
@@ -138,6 +148,8 @@ impl QualityOracle {
     ) {
         curator.require_auth();
         let cur_key = Self::curator_key(&env, &curator);
+        if !env.storage().persistent().has(&cur_key) {
+            panic!("curator not registered");
         let record: CuratorRecord = env
             .storage()
             .persistent()
