@@ -23,6 +23,7 @@ coverage/
 # Rust / Soroban
 target/
 **/target/
+**/test_snapshots/
 
 # IDE / OS
 .DS_Store
