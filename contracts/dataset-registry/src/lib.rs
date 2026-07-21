@@ -3,6 +3,8 @@
 #[macro_use]
 extern crate alloc;
 
+#![no_std]
+use alloc::format;
 use soroban_sdk::{
     contract, contractimpl, contracttype, symbol_short,
     Address, Env, String, Vec,
@@ -117,6 +119,7 @@ impl DatasetRegistry {
     }
 
     fn increment_reputation(env: &Env, address: &Address) {
+        let rep_key = String::from_str(env, &format!("rep_{:?}", address));
         let mut rep: ContributorReputation = env.storage().persistent()
             .get(address)
             .unwrap_or(ContributorReputation {
@@ -134,6 +137,8 @@ impl DatasetRegistry {
 
     pub fn get_reputation(env: Env, address: Address) -> ContributorReputation {
         env.storage().persistent().get(&address).expect("no reputation data")
+        let rep_key = String::from_str(&env, &format!("rep_{:?}", address));
+        env.storage().persistent().get(&rep_key).expect("no reputation data")
     }
 
     pub fn get_dataset(env: Env, dataset_id: String) -> Dataset {

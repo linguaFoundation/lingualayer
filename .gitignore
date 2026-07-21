@@ -33,3 +33,8 @@ Thumbs.db
 
 # Debug
 *.pem
+
+# Local vendor patches and generated lock file
+vendor/
+Cargo.lock
+contracts/data-commission/test_snapshots/
