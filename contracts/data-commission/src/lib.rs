@@ -1,4 +1,8 @@
-#![no_std]
+#![cfg_attr(not(test), no_std)]
+#[cfg(not(test))]
+#[macro_use]
+extern crate alloc;
+
 use soroban_sdk::{
     contract, contractimpl, contracttype, symbol_short, token,
     Address, Env, String,

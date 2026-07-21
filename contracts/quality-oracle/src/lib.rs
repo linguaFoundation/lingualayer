@@ -1,10 +1,19 @@
-#![no_std]
+#![cfg_attr(not(test), no_std)]
+
 use soroban_sdk::{
     contract, contractimpl, contracttype, symbol_short,
-    Address, Env, String, Vec,
+    Address, Env, String,
 };
 
 const MAX_SCORE: u32 = 100;
+
+#[contracttype]
+#[derive(Clone)]
+enum StorageKey {
+    Curator(Address),
+    Attestation(String, Address),
+    Quality(String),
+}
 
 #[contracttype]
 #[derive(Clone, Debug)]
@@ -52,7 +61,7 @@ impl QualityOracle {
 
     pub fn register_curator(env: Env, curator: Address) {
         curator.require_auth();
-        let key = String::from_str(&env, &format!("cur_{}", curator));
+        let key = StorageKey::Curator(curator.clone());
         if env.storage().persistent().has(&key) {
             panic!("curator already registered");
         }
@@ -70,7 +79,7 @@ impl QualityOracle {
         rubric_hash: soroban_sdk::BytesN<32>,
     ) {
         curator.require_auth();
-        let cur_key = String::from_str(&env, &format!("cur_{}", curator));
+        let cur_key = StorageKey::Curator(curator.clone());
         if !env.storage().persistent().has(&cur_key) {
             panic!("curator not registered");
         }
@@ -85,10 +94,10 @@ impl QualityOracle {
             rubric_hash,
             ledger: env.ledger().sequence(),
         };
-        let attest_key = String::from_str(&env, &format!("att_{}_{}", dataset_id, curator));
+        let attest_key = StorageKey::Attestation(dataset_id.clone(), curator);
         env.storage().persistent().set(&attest_key, &attest);
 
-        let agg_key = String::from_str(&env, &format!("agg_{}", dataset_id));
+        let agg_key = StorageKey::Quality(dataset_id.clone());
         let mut quality: DatasetQuality = env.storage().persistent()
             .get(&agg_key)
             .unwrap_or(DatasetQuality {
@@ -110,13 +119,13 @@ impl QualityOracle {
     }
 
     pub fn get_quality(env: Env, dataset_id: String) -> DatasetQuality {
-        let agg_key = String::from_str(&env, &format!("agg_{}", dataset_id));
+        let agg_key = StorageKey::Quality(dataset_id);
         env.storage().persistent().get(&agg_key).expect("no quality data")
     }
 
     pub fn royalty_multiplier_bps(env: Env, dataset_id: String) -> u32 {
-        let agg_key = String::from_str(&env, &format!("agg_{}", dataset_id));
-        match env.storage().persistent().get::<String, DatasetQuality>(&agg_key) {
+        let agg_key = StorageKey::Quality(dataset_id);
+        match env.storage().persistent().get::<StorageKey, DatasetQuality>(&agg_key) {
             Some(q) => match q.tier {
                 QualityTier::Platinum => 15000,
                 QualityTier::Gold     => 12500,
