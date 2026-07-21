@@ -33,6 +33,7 @@ const nav = [
   ["Communities", "/communities"],
   ["Licensing", "/licensing"],
   ["Royalties", "/royalties"],
+  ["Attest", "/attestation"],
   ["Governance", "/governance"],
   ["Roadmap", "/roadmap"],
   ["Docs", "/docs"],
