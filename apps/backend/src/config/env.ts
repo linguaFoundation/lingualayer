@@ -6,14 +6,16 @@ const schema = z.object({
   PORT: z.coerce.number().default(8080),
   API_PREFIX: z.string().default("/api/v1"),
   CORS_ORIGIN: z.string().default("http://localhost:3000"),
-  // SEP-0010 Web Authentication
-  STELLAR_NETWORK_PASSPHRASE: z
-    .string()
-    .default("Test SDF Network ; September 2015"),
-  SERVER_SIGNING_KEY: z.string().default(""),
-  SERVER_DOMAIN: z.string().max(59).default("lingualayer.io"),
-  WEB_AUTH_DOMAIN: z.string().default("lingualayer.io"),
-  CHALLENGE_TTL_SECONDS: z.coerce.number().default(900),
+
+  STELLAR_NETWORK: z.enum(["testnet", "mainnet"]).default("testnet"),
+
+  SEP10_SERVER_SECRET: z.string().optional(),
+  SEP10_HOME_DOMAIN: z.string().default("lingualayer.vercel.app"),
+  SEP10_WEB_AUTH_DOMAIN: z.string().optional(),
+  SEP10_CHALLENGE_TIMEOUT_SECONDS: z.coerce.number().default(300),
+
+  JWT_SECRET: z.string().optional(),
+  JWT_TTL_SECONDS: z.coerce.number().default(3600),
 });
 
 const raw = schema.parse(process.env);
@@ -23,9 +25,14 @@ export const config = {
   port: raw.PORT,
   apiPrefix: raw.API_PREFIX,
   corsOrigin: raw.CORS_ORIGIN,
-  networkPassphrase: raw.STELLAR_NETWORK_PASSPHRASE,
-  serverSigningKey: raw.SERVER_SIGNING_KEY,
-  serverDomain: raw.SERVER_DOMAIN,
-  webAuthDomain: raw.WEB_AUTH_DOMAIN,
-  challengeTtlSeconds: raw.CHALLENGE_TTL_SECONDS,
+
+  stellarNetwork: raw.STELLAR_NETWORK,
+
+  sep10ServerSecret: raw.SEP10_SERVER_SECRET,
+  sep10HomeDomain: raw.SEP10_HOME_DOMAIN,
+  sep10WebAuthDomain: raw.SEP10_WEB_AUTH_DOMAIN ?? raw.SEP10_HOME_DOMAIN,
+  sep10ChallengeTimeoutSeconds: raw.SEP10_CHALLENGE_TIMEOUT_SECONDS,
+
+  jwtSecret: raw.JWT_SECRET,
+  jwtTtlSeconds: raw.JWT_TTL_SECONDS,
 };

@@ -1,109 +1,168 @@
 "use client";
 
-/**
- * WalletContext: React context wrapping Stellar Wallets Kit unified modal (Issue #140).
- *
- * wallets-kit is imported dynamically inside callbacks so the stellar-wallets-kit
- * package (which accesses localStorage at module scope) is never pulled into the
- * server render and does not crash during Next.js static prerendering.
- *
- * Usage:
- *   // Wrap your app (in layout.tsx or a root client boundary):
- *   <WalletProvider>…</WalletProvider>
- *
- *   // Consume in any client component:
- *   const { address, connected, connect, disconnect, sign } = useWallet();
- */
-
 import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
+  useMemo,
   useState,
   type ReactNode,
 } from "react";
 
-interface WalletState {
-  address: string | null;
-  walletId: string | null;
-  connected: boolean;
-  connecting: boolean;
-  error: string | null;
+// `@creit.tech/stellar-wallets-kit` touches browser-only APIs at module scope,
+// so it must never be statically imported from a module that Next.js
+// server-renders (every page, via this context living in the root layout).
+// Loading it lazily keeps it out of the SSR pass entirely.
+function loadWalletsKit() {
+  return import("./wallets-kit");
 }
 
-interface WalletContextValue extends WalletState {
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080/api/v1";
+const SESSION_STORAGE_KEY = "lingualayer.sep10.session";
+
+interface StoredSession {
+  address: string;
+  token: string;
+}
+
+interface WalletContextValue {
+  address: string | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  isConnecting: boolean;
+  isAuthenticating: boolean;
+  error: string | null;
   connect: () => Promise<void>;
-  disconnect: () => Promise<void>;
-  sign: (xdr: string, networkPassphrase?: string) => Promise<string>;
+  connectWithLedger: () => Promise<void>;
+  disconnect: () => void;
 }
 
 const WalletContext = createContext<WalletContextValue | null>(null);
 
-export function WalletProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<WalletState>({
-    address: null,
-    walletId: null,
-    connected: false,
-    connecting: false,
-    error: null,
+/**
+ * SEP-0010 Stellar Web Authentication: fetch a challenge transaction from the
+ * backend, have the connected wallet sign it, then exchange the signed
+ * challenge for a JWT. Replaces the previous custom Sign-In-With-Stellar flow.
+ */
+async function authenticate(account: string): Promise<string> {
+  const challengeRes = await fetch(
+    `${API_BASE}/auth/challenge?account=${encodeURIComponent(account)}`,
+  );
+  if (!challengeRes.ok) {
+    const body = await challengeRes.json().catch(() => null);
+    throw new Error(body?.error ?? "Failed to fetch SEP-0010 challenge");
+  }
+  const { transaction, network_passphrase: networkPassphrase } = await challengeRes.json();
+
+  const { signTransaction } = await loadWalletsKit();
+  const signedTransaction = await signTransaction(transaction, networkPassphrase);
+
+  const tokenRes = await fetch(`${API_BASE}/auth/token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ transaction: signedTransaction }),
   });
-
-  const connect = useCallback(async () => {
-    setState((s) => ({ ...s, connecting: true, error: null }));
-    try {
-      const { initWalletsKit, openWalletModal } = await import("./wallets-kit");
-      initWalletsKit();
-      const { address, walletId } = await openWalletModal();
-      setState({
-        address,
-        walletId,
-        connected: true,
-        connecting: false,
-        error: null,
-      });
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Wallet connection failed.";
-      setState((s) => ({ ...s, connecting: false, error: message }));
-    }
-  }, []);
-
-  const disconnect = useCallback(async () => {
-    try {
-      const { disconnectWallet } = await import("./wallets-kit");
-      await disconnectWallet();
-    } catch {
-      // Ignore disconnect errors — clear local state regardless.
-    } finally {
-      setState({
-        address: null,
-        walletId: null,
-        connected: false,
-        connecting: false,
-        error: null,
-      });
-    }
-  }, []);
-
-  const sign = useCallback(
-    async (xdr: string, networkPassphrase?: string): Promise<string> => {
-      if (!state.connected) throw new Error("No wallet connected.");
-      const { signTransaction } = await import("./wallets-kit");
-      return signTransaction(xdr, networkPassphrase);
-    },
-    [state.connected]
-  );
-
-  return (
-    <WalletContext.Provider value={{ ...state, connect, disconnect, sign }}>
-      {children}
-    </WalletContext.Provider>
-  );
+  if (!tokenRes.ok) {
+    const body = await tokenRes.json().catch(() => null);
+    throw new Error(body?.error ?? "SEP-0010 verification failed");
+  }
+  const { token } = await tokenRes.json();
+  return token as string;
 }
 
-/** Consume wallet state and actions inside any client component. */
+export function WalletProvider({ children }: { children: ReactNode }) {
+  const [address, setAddress] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(SESSION_STORAGE_KEY);
+    if (!stored) return;
+    try {
+      const session = JSON.parse(stored) as StoredSession;
+      setAddress(session.address);
+      setToken(session.token);
+    } catch {
+      window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    }
+  }, []);
+
+  const persistSession = useCallback((session: StoredSession) => {
+    setAddress(session.address);
+    setToken(session.token);
+    window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  }, []);
+
+  const connect = useCallback(async () => {
+    setIsConnecting(true);
+    setError(null);
+    try {
+      const { openWalletModal } = await loadWalletsKit();
+      const { address: connectedAddress } = await openWalletModal();
+      setIsConnecting(false);
+      setIsAuthenticating(true);
+      const jwt = await authenticate(connectedAddress);
+      persistSession({ address: connectedAddress, token: jwt });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Wallet connection failed");
+    } finally {
+      setIsConnecting(false);
+      setIsAuthenticating(false);
+    }
+  }, [persistSession]);
+
+  const connectWithLedger = useCallback(async () => {
+    setIsConnecting(true);
+    setError(null);
+    try {
+      const { connectLedger } = await loadWalletsKit();
+      const { address: connectedAddress } = await connectLedger();
+      setIsConnecting(false);
+      setIsAuthenticating(true);
+      const jwt = await authenticate(connectedAddress);
+      persistSession({ address: connectedAddress, token: jwt });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ledger connection failed");
+    } finally {
+      setIsConnecting(false);
+      setIsAuthenticating(false);
+    }
+  }, [persistSession]);
+
+  const disconnect = useCallback(() => {
+    loadWalletsKit().then(({ disconnectWallet }) => disconnectWallet().catch(() => {}));
+    setAddress(null);
+    setToken(null);
+    setError(null);
+    window.localStorage.removeItem(SESSION_STORAGE_KEY);
+  }, []);
+
+  const value = useMemo<WalletContextValue>(
+    () => ({
+      address,
+      token,
+      isAuthenticated: Boolean(token),
+      isConnecting,
+      isAuthenticating,
+      error,
+      connect,
+      connectWithLedger,
+      disconnect,
+    }),
+    [address, token, isConnecting, isAuthenticating, error, connect, connectWithLedger, disconnect],
+  );
+
+  return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
+}
+
 export function useWallet(): WalletContextValue {
   const ctx = useContext(WalletContext);
-  if (!ctx) throw new Error("useWallet must be used inside <WalletProvider>.");
+  if (!ctx) {
+    throw new Error("useWallet must be used within a WalletProvider");
+  }
   return ctx;
 }
