@@ -2,19 +2,16 @@
 
 use soroban_sdk::{
     contract, contractimpl, contracttype, symbol_short,
-    Address, Env, String,
+    Address, BytesN, Env, String,
 };
 
 const MAX_SCORE: u32 = 100;
 // Default minimum stake: 1 XLM expressed in stroops
 const MIN_STAKE_DEFAULT: u64 = 10_000_000;
 
-#[contracttype]
-#[derive(Clone, Debug)]
-pub struct CuratorRecord {
-    pub stake: u64,
-    pub slashed: bool,
-}
+// ---------------------------------------------------------------------------
+// Storage key types (typed keys avoid format! which is unavailable in no_std)
+// ---------------------------------------------------------------------------
 
 #[contracttype]
 #[derive(Clone)]
@@ -24,13 +21,24 @@ enum StorageKey {
     Quality(String),
 }
 
+// ---------------------------------------------------------------------------
+// Public data types
+// ---------------------------------------------------------------------------
+
+#[contracttype]
+#[derive(Clone, Debug)]
+pub struct CuratorRecord {
+    pub stake: u64,
+    pub slashed: bool,
+}
+
 #[contracttype]
 #[derive(Clone, Debug)]
 pub struct QualityAttestation {
     pub dataset_id: String,
     pub curator: Address,
     pub score: u32,
-    pub rubric_hash: soroban_sdk::BytesN<32>,
+    pub rubric_hash: BytesN<32>,
     pub ledger: u32,
 }
 
@@ -54,6 +62,10 @@ pub enum QualityTier {
     Platinum,
 }
 
+// ---------------------------------------------------------------------------
+// Contract
+// ---------------------------------------------------------------------------
+
 #[contract]
 pub struct QualityOracle;
 
@@ -75,7 +87,6 @@ impl QualityOracle {
     /// `stake` must be >= the configured minimum stake.
     pub fn register_curator(env: Env, curator: Address, stake: u64) {
         curator.require_auth();
-        let key = StorageKey::Curator(curator.clone());
         let min: u64 = env
             .storage()
             .instance()
@@ -84,7 +95,7 @@ impl QualityOracle {
         if stake < min {
             panic!("stake below minimum");
         }
-        let key = Self::curator_key(&env, &curator);
+        let key = StorageKey::Curator(curator.clone());
         if env.storage().persistent().has(&key) {
             panic!("curator already registered");
         }
@@ -115,7 +126,7 @@ impl QualityOracle {
             panic!("unauthorized");
         }
         admin.require_auth();
-        let key = Self::curator_key(&env, &curator);
+        let key = StorageKey::Curator(curator.clone());
         let mut record: CuratorRecord = env
             .storage()
             .persistent()
@@ -134,7 +145,7 @@ impl QualityOracle {
 
     /// Returns the current stake amount for a curator (0 if not registered or slashed).
     pub fn get_curator_stake(env: Env, curator: Address) -> u64 {
-        let key = Self::curator_key(&env, &curator);
+        let key = StorageKey::Curator(curator);
         let maybe: Option<CuratorRecord> = env.storage().persistent().get(&key);
         maybe.map(|r| r.stake).unwrap_or(0)
     }
@@ -144,12 +155,10 @@ impl QualityOracle {
         curator: Address,
         dataset_id: String,
         score: u32,
-        rubric_hash: soroban_sdk::BytesN<32>,
+        rubric_hash: BytesN<32>,
     ) {
         curator.require_auth();
-        let cur_key = Self::curator_key(&env, &curator);
-        if !env.storage().persistent().has(&cur_key) {
-            panic!("curator not registered");
+        let cur_key = StorageKey::Curator(curator.clone());
         let record: CuratorRecord = env
             .storage()
             .persistent()
@@ -169,13 +178,18 @@ impl QualityOracle {
             rubric_hash,
             ledger: env.ledger().sequence(),
         };
-        let attest_key =
-            String::from_str(&env, &format!("att_{}_{}", dataset_id, curator));
+        let attest_key = StorageKey::Attestation(dataset_id.clone(), curator);
         env.storage().persistent().set(&attest_key, &attest);
+        env.storage()
+            .persistent()
+            .extend_ttl(&attest_key, 7_776_000, 7_776_000);
 
-        let agg_key = String::from_str(&env, &format!("agg_{}", dataset_id));
-        let mut quality: DatasetQuality =
-            env.storage().persistent().get(&agg_key).unwrap_or(DatasetQuality {
+        let agg_key = StorageKey::Quality(dataset_id.clone());
+        let mut quality: DatasetQuality = env
+            .storage()
+            .persistent()
+            .get(&agg_key)
+            .unwrap_or(DatasetQuality {
                 dataset_id: dataset_id.clone(),
                 average_score: 0,
                 attestation_count: 0,
@@ -183,8 +197,9 @@ impl QualityOracle {
                 tier: QualityTier::Unrated,
             });
 
-        let new_total =
-            quality.average_score as u64 * quality.attestation_count as u64 + score as u64;
+        let new_total = quality.average_score as u64
+            * quality.attestation_count as u64
+            + score as u64;
         quality.attestation_count += 1;
         quality.average_score = (new_total / quality.attestation_count as u64) as u32;
         quality.last_updated_ledger = env.ledger().sequence();
@@ -197,28 +212,37 @@ impl QualityOracle {
     }
 
     pub fn get_quality(env: Env, dataset_id: String) -> DatasetQuality {
-        let agg_key = String::from_str(&env, &format!("agg_{}", dataset_id));
+        let agg_key = StorageKey::Quality(dataset_id);
         env.storage()
             .persistent()
             .get(&agg_key)
             .expect("no quality data")
     }
 
+    /// Returns the royalty multiplier for `dataset_id` in basis points.
+    ///
+    /// | Tier     | BPS    | Effective rate |
+    /// |----------|--------|----------------|
+    /// | Unrated  | 10 000 | 1.0×           |
+    /// | Bronze   |  7 500 | 0.75×          |
+    /// | Silver   | 10 000 | 1.0×           |
+    /// | Gold     | 12 500 | 1.25×          |
+    /// | Platinum | 15 000 | 1.5×           |
     pub fn royalty_multiplier_bps(env: Env, dataset_id: String) -> u32 {
-        let agg_key = String::from_str(&env, &format!("agg_{}", dataset_id));
+        let agg_key = StorageKey::Quality(dataset_id);
         match env
             .storage()
             .persistent()
-            .get::<String, DatasetQuality>(&agg_key)
+            .get::<StorageKey, DatasetQuality>(&agg_key)
         {
             Some(q) => match q.tier {
-                QualityTier::Platinum => 15000,
-                QualityTier::Gold => 12500,
-                QualityTier::Silver => 10000,
-                QualityTier::Bronze => 7500,
-                QualityTier::Unrated => 10000,
+                QualityTier::Platinum => 15_000,
+                QualityTier::Gold => 12_500,
+                QualityTier::Silver => 10_000,
+                QualityTier::Bronze => 7_500,
+                QualityTier::Unrated => 10_000,
             },
-            None => 10000,
+            None => 10_000,
         }
     }
 
@@ -232,14 +256,14 @@ impl QualityOracle {
         }
     }
 
-    fn curator_key(env: &Env, curator: &Address) -> String {
-        String::from_str(env, &format!("cur_{}", curator))
-    }
-
     pub fn version(_env: Env) -> u32 {
         2
     }
 }
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
 
 #[cfg(test)]
 mod tests {
